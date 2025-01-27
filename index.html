@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sweet Artisan</title>
+    <style>
+        /* All your existing CSS styles remain the same */
+        :root {
+            --primary: #ff6b6b;
+            --secondary: #4ecdc4;
+            --dark: #2d3436;
+            --light: #f9f9f9;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--dark);
+            color: var(--light);
+        }
+
+        .header {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+          .search-bar {
+              max-width: 600px;
+              margin: 2rem auto;
+              padding: 0 1rem;
+          }
+
+          .search-bar input {
+              width: 100%;
+              padding: 1rem;
+              border-radius: 25px;
+              border: none;
+              background: rgba(255,255,255,0.1);
+              color: var(--light);
+              font-size: 1.1rem;
+              box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+              transition: all 0.3s ease;
+          }
+
+          .search-bar input:focus {
+              transform: translateY(-2px);
+              box-shadow: 0 12px 25px rgba(0,0,0,0.2);
+          }
+
+          .recipe-grid {
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+              gap: 2rem;
+              padding: 2rem;
+          }
+
+          .recipe-card {
+              background: rgba(255,255,255,0.05);
+              border-radius: 15px;
+              padding: 1.5rem;
+              transition: transform 0.3s ease;
+              cursor: pointer;
+              animation: fadeIn 0.5s ease-in;
+              perspective: 1000px;
+              transform-style: preserve-3d;
+          }
+
+          .recipe-card:hover {
+              transform: translateY(-10px) rotateX(5deg);
+              background: rgba(255,255,255,0.1);
+          }
+
+          .recipe-image {
+              width: 100%;
+              height: 200px;
+              border-radius: 10px;
+              object-fit: cover;
+              position: relative;
+              overflow: hidden;
+          }
+
+          .recipe-image::after {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: -100%;
+              width: 200%;
+              height: 100%;
+              background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+              animation: shimmer 2s infinite;
+          }
+
+          @keyframes shimmer {
+              0% { transform: translateX(-100%) }
+              100% { transform: translateX(100%) }
+          }
+
+          .difficulty {
+              display: inline-block;
+              padding: 0.5rem 1rem;
+              border-radius: 15px;
+              margin-top: 1rem;
+              font-size: 0.9rem;
+              animation: pulse 2s infinite;
+          }
+
+          @keyframes pulse {
+              0% { transform: scale(1) }
+              50% { transform: scale(1.05) }
+              100% { transform: scale(1) }
+          }
+
+          .easy { background: #00b894; }
+          .medium { background: #fdcb6e; }
+          .hard { background: #d63031; }
+
+          .recipe-modal {
+              display: none;
+              position: fixed;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background: rgba(0,0,0,0.8);
+              justify-content: center;
+              align-items: center;
+              transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          .modal-content {
+              background: var(--dark);
+              padding: 2rem;
+              border-radius: 15px;
+              max-width: 800px;
+              max-height: 80vh;
+              overflow-y: auto;
+              animation: modalSlide 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+          }
+
+          @keyframes modalSlide {
+              from {
+                  opacity: 0;
+                  transform: translateY(-50px) scale(0.9);
+              }
+              to {
+                  opacity: 1;
+                  transform: translateY(0) scale(1);
+              }
+          }
+
+          .filter-controls select {
+              transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          .filter-controls select:focus {
+              transform: scale(1.05);
+              border-color: var(--primary);
+          }
+
+        .filter-controls {
+            display: flex;
+            gap: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .filter-controls select {
+            padding: 0.5rem;
+            border-radius: 15px;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            color: var(--light);
+            cursor: pointer;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .recipe-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Enhanced Filter Styles */
+        .recipe-navigation {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            margin: 2rem auto;
+            max-width: 900px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .filter-wrapper {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .filter-wrapper select {
+            padding: 1rem;
+            border-radius: 12px;
+            border: 2px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
+            color: var(--light);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .filter-wrapper select:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.2);
+        }
+
+        /* Professional Footer Styles */
+        .site-footer {
+            background: linear-gradient(to right, #2d3436, #1a1a1a);
+            padding: 4rem 2rem 2rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+        }
+
+        .footer-section h3 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer-section h4 {
+            color: var(--secondary);
+            margin-bottom: 1rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-section a {
+            color: var(--light);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .social-icon {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .social-icon:hover {
+            background: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Enhanced Animations */
+        @keyframes floatIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .recipe-card {
+            animation: floatIn 0.6s ease-out forwards;
+            animation-delay: calc(var(--card-index) * 0.1s);
+        }
+
+        .social-icon {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧁 BakeHaven</h1>
+        <p>Discover the art of baking</p>
+    </div>
+
+    <div class="recipe-navigation">
+        <div class="filter-wrapper">
+            <select id="difficultyFilter" onchange="filterRecipes()">
+                <option value="all">Skill Level</option>
+                <option value="easy">Beginner Friendly</option>
+                <option value="medium">Intermediate</option>
+                <option value="hard">Advanced</option>
+            </select>
+            <select id="timeFilter" onchange="filterRecipes()">
+                <option value="all">Baking Time</option>
+                <option value="30">Quick (< 30 mins)</option>
+                <option value="60">Standard (< 1 hour)</option>
+                <option value="120">Leisurely (< 2 hours)</option>
+            </select>
+            <select id="categoryFilter" onchange="filterRecipes()">
+                <option value="all">Category</option>
+                <option value="cookies">Cookies</option>
+                <option value="cakes">Cakes</option>
+                <option value="bread">Breads</option>
+                <option value="pastries">Pastries</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="search-bar">
+        <input type="text" placeholder="Search recipes..." id="searchInput">
+    </div>
+
+    <div class="recipe-grid" id="recipeGrid"></div>
+
+    <div class="recipe-modal" id="recipeModal">
+        <div class="modal-content" id="modalContent"></div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>BakeHaven</h3>
+                <p>Discover the art of baking with our curated collection of recipes</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Baking Tips</a></li>
+                    <li><a href="#">Recipe Index</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Connect</h4>
+                <div class="social-links">
+                    <a href="#" class="social-icon"></a>
+                    <a href="#" class="social-icon"></a>
+                    <a href="#" class="social-icon"></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2024 BakeHaven. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Your existing JavaScript code remains the same
+         const recipes = [
+            {
+                id: 1,
+                name: "Classic Chocolate Chip Cookies",
+                difficulty: "easy",
+                time: "30 mins",
+                image: "https://images.unsplash.com/photo-1499636136210-6f4ee915583e",
+                ingredients: [
+                    "2 1/4 cups all-purpose flour",
+                    "1 cup butter",
+                    "3/4 cup sugar",
+                    "3/4 cup brown sugar",
+                    "2 eggs",
+                    "2 cups chocolate chips",
+                    "1 tsp vanilla extract",
+                    "1 tsp baking soda"
+                ],
+                instructions: [
+                    "Preheat oven to 375°F (190°C)",
+                    "Cream butter and sugars",
+                    "Beat in eggs and vanilla",
+                    "Mix in dry ingredients",
+                    "Fold in chocolate chips",
+                    "Bake for 10-12 minutes"
+                ]
+            },
+            {
+                id: 2,
+                name: "Vanilla Cupcakes",
+                difficulty: "easy",
+                time: "45 mins",
+                image: "https://images.unsplash.com/photo-1486427944299-d1955d23e34d",
+                ingredients: [
+                    "1 1/2 cups flour",
+                    "1 cup sugar",
+                    "1/2 cup butter",
+                    "2 eggs",
+                    "2 tsp vanilla extract",
+                    "1 1/2 tsp baking powder",
+                    "1/2 cup milk"
+                ],
+                instructions: [
+                    "Preheat oven to 350°F (175°C)",
+                    "Cream butter and sugar",
+                    "Add eggs one at a time",
+                    "Mix in dry ingredients alternating with milk",
+                    "Bake for 18-20 minutes"
+                ]
+            },
+            {
+                id: 3,
+                name: "Cinnamon Rolls",
+                difficulty: "medium",
+                time: "2 hours",
+                image: "https://images.unsplash.com/photo-1509365465985-25d11c17e812",
+                ingredients: [
+                    "4 cups all-purpose flour",
+                    "1 cup warm milk",
+                    "2 1/4 tsp active dry yeast",
+                    "1/3 cup butter",
+                    "2 eggs",
+                    "1/4 cup sugar",
+                    "1 tbsp cinnamon",
+                    "1 cup brown sugar for filling"
+                ],
+                instructions: [
+                    "Activate yeast in warm milk",
+                    "Mix flour, sugar, and salt",
+                    "Add eggs and butter to milk mixture",
+                    "Knead dough for 10 minutes",
+                    "Let rise for 1 hour",
+                    "Roll out and add filling",
+                    "Roll up and cut into rolls",
+                    "Second rise 30 minutes",
+                    "Bake at 375°F for 20-25 minutes"
+                ]
+            },
+            {
+                id: 4,
+                name: "Lemon Meringue Pie",
+                difficulty: "hard",
+                time: "90 mins",
+                image: "https://images.unsplash.com/photo-1519915028121-7d3463d20b13",
+                ingredients: [
+                    "Pie crust",
+                    "6 egg yolks",
+                    "1 cup lemon juice",
+                    "2 cups sugar",
+                    "1/4 cup cornstarch",
+                    "6 egg whites",
+                    "1/2 tsp cream of tartar"
+                ],
+                instructions: [
+                    "Blind bake pie crust",
+                    "Cook lemon filling until thick",
+                    "Make meringue",
+                    "Fill pie and top with meringue",
+                    "Bake until golden brown"
+                ]
+            },
+            {
+                id: 5,
+                name: "French Macarons",
+                difficulty: "hard",
+                time: "2 hours",
+                image: "https://images.unsplash.com/photo-1569864358642-9d1684040f43",
+                ingredients: [
+                    "100g almond flour",
+                    "100g powdered sugar",
+                    "70g egg whites",
+                    "50g granulated sugar",
+                    "Food coloring (optional)"
+                ],
+                instructions: [
+                    "Sift almond flour and powdered sugar",
+                    "Beat egg whites to soft peaks",
+                    "Add granulated sugar gradually",
+                    "Fold in dry ingredients",
+                    "Pipe and rest for 30 minutes",
+                    "Bake at 300°F for 15-17 minutes"
+                ]
+            }
+        ];
+
+        function displayRecipes(recipesToShow = recipes) {
+            const grid = document.getElementById('recipeGrid');
+            grid.innerHTML = '';
+            
+            recipesToShow.forEach(recipe => {
+                const card = document.createElement('div');
+                card.className = 'recipe-card';
+                card.innerHTML = `
+                    <img src="${recipe.image}" alt="${recipe.name}" class="recipe-image">
+                    <h2>${recipe.name}</h2>
+                    <p>⏱️ ${recipe.time}</p>
+                    <span class="difficulty ${recipe.difficulty}">${recipe.difficulty.toUpperCase()}</span>
+                `;
+                
+                card.onclick = () => showRecipeDetails(recipe);
+                grid.appendChild(card);
+            });
+        }
+
+        function showRecipeDetails(recipe) {
+            const modal = document.getElementById('recipeModal');
+            const content = document.getElementById('modalContent');
+            
+            content.innerHTML = `
+                <h2>${recipe.name}</h2>
+                <img src="${recipe.image}" alt="${recipe.name}" style="width:100%;max-height:300px;object-fit:cover;border-radius:10px;">
+                <h3>Ingredients:</h3>
+                <ul>${recipe.ingredients.map(i => `<li>${i}</li>`).join('')}</ul>
+                <h3>Instructions:</h3>
+                <ol>${recipe.instructions.map(i => `<li>${i}</li>`).join('')}</ol>
+                <button onclick="closeModal()" style="padding:1rem;background:var(--primary);border:none;border-radius:25px;color:white;cursor:pointer;">Close</button>
+            `;
+            
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('recipeModal').style.display = 'none';
+        }
+
+        function filterRecipes() {
+            const difficulty = document.getElementById('difficultyFilter').value;
+            const time = document.getElementById('timeFilter').value;
+            
+            let filtered = recipes;
+            
+            if (difficulty !== 'all') {
+                filtered = filtered.filter(recipe => recipe.difficulty === difficulty);
+            }
+            
+            if (time !== 'all') {
+                filtered = filtered.filter(recipe => {
+                    const recipeMinutes = parseInt(recipe.time);
+                    return recipeMinutes <= parseInt(time);
+                });
+            }
+            
+            displayRecipes(filtered);
+        }
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredRecipes = recipes.filter(recipe => 
+                recipe.name.toLowerCase().includes(searchTerm)
+            );
+            displayRecipes(filteredRecipes);
+        });
+
+        // Initialize the page
+        displayRecipes();
+    </script>
+</body>
+</html>
